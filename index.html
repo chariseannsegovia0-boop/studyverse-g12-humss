@@ -91,7 +91,60 @@ function openReflection(id){let t=data.tasks.find(x=>x.id===id);let note=prompt(
 function deleteTask(id){data.tasks=data.tasks.filter(x=>x.id!==id);save();syncTasks();render();}
 function renderTasks(){let box=document.getElementById('tasks');if(!data.tasks.length){box.innerHTML='<p class="muted">No activities yet.</p>';return}data.tasks.sort((a,b)=>new Date(a.due)-new Date(b.due));box.innerHTML=data.tasks.map(t=>`<div class="task ${t.done?'done':''}"><input type="checkbox" ${t.done?'checked':''} onchange="complete(${t.id})"><span style="flex:1"><span class="taskname"><b>${esc(t.name)}</b></span><br><small>${new Date(t.due).toLocaleString()} • <span class="pill ${t.cat}">${labelCat(t.cat)}</span> <span class="pill ${t.priority==='Urgent'?'urgent':''}">${t.priority}</span>${t.mood?' • '+t.mood[0]:''}</small></span><button class="secondary" onclick="deleteTask(${t.id})">×</button></div>`).join('');}
 function labelCat(c){return c==='school'?'🏫 School':c==='org'?'🧡 Organization':'📚 Study'}
-function renderCal(){let now=new Date(),y=now.getFullYear(),m=now.getMonth(),first=new Date(y,m,1).getDay(),days=new Date(y,m+1,0).getDate(),s=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'].map(x=>`<div class="day"><strong>${x}</strong></div>`).join('');for(let i=0;i<first;i++)s+='<div class="day"></div>';for(let d=1;d<=days;d++){let ev=data.tasks.filter(t=>{let x=new Date(t.due);return x.getFullYear()===y&&x.getMonth()===m&&x.getDate()===d});s+=`<div class="day"><strong>${d}</strong>${ev.map(e=>`<div class="event ${e.cat} ${e.done?'done':''}" onclick="complete(${e.id})">${e.mood?e.mood[0]+' ':''}${esc(e.name)} ${e.done?'✓':''}</div>`).join('')}</div>`}cal.innerHTML=s;}
+let calDate=new Date();
+
+function changeMonth(amount){
+  calDate.setMonth(calDate.getMonth()+amount);
+  renderCal();
+}
+
+function renderCal(){
+  let y=calDate.getFullYear(),
+      m=calDate.getMonth(),
+      first=new Date(y,m,1).getDay(),
+      days=new Date(y,m+1,0).getDate();
+
+  let monthName=new Date(y,m,1).toLocaleString('en-US',{
+    month:'long',
+    year:'numeric'
+  });
+
+  let s=`
+    <div style="grid-column:1/-1;display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
+      <button class="secondary" onclick="changeMonth(-1)">◀ Previous</button>
+      <h3 style="margin:0">${monthName}</h3>
+      <button class="secondary" onclick="changeMonth(1)">Next ▶</button>
+    </div>
+  `;
+
+  s+=['Sun','Mon','Tue','Wed','Thu','Fri','Sat']
+    .map(x=>`<div class="day"><strong>${x}</strong></div>`).join('');
+
+  for(let i=0;i<first;i++) s+='<div class="day"></div>';
+
+  for(let d=1;d<=days;d++){
+    let ev=data.tasks.filter(t=>{
+      let x=new Date(t.due);
+      return x.getFullYear()===y &&
+             x.getMonth()===m &&
+             x.getDate()===d;
+    });
+
+    s+=`
+      <div class="day">
+        <strong>${d}</strong>
+        ${ev.map(e=>`
+          <div class="event ${e.cat} ${e.done?'done':''}"
+               onclick="complete(${e.id})">
+            ${e.mood?e.mood[0]+' ':''}${esc(e.name)} ${e.done?'✓':''}
+          </div>
+        `).join('')}
+      </div>
+    `;
+  }
+
+  cal.innerHTML=s;
+}
 function renderChallenges(){let completed=data.tasks.filter(x=>x.done).length;let cs=[['⚡ Urgent Finisher','Complete an urgent calendar task','+20 ⭐',completed],['📚 Study Streak','Complete 3 study tasks','+25 ⭐',data.tasks.filter(x=>x.done&&x.cat==='study').length],['🏫 School Ready','Complete 3 school tasks','+25 ⭐',data.tasks.filter(x=>x.done&&x.cat==='school').length],['🧡 Org Balance','Complete 3 organization tasks','+25 ⭐',data.tasks.filter(x=>x.done&&x.cat==='org').length]];challengeList.innerHTML=cs.map(c=>`<div class="challenge"><h3>${c[0]}</h3><p>${c[1]}</p><b>${c[2]}</b><p class="muted">${c[3]} progress</p></div>`).join('');}
 function buyTheme(name,cost){if(data.themes.includes(name)){data.theme=name;save();applyTheme();return}if(data.points<cost)return alert('Not enough points yet.');data.points-=cost;data.themes.push(name);data.theme=name;save();applyTheme();}
 function renderRewards(){rewardPoints.textContent=data.points;rewardsList.innerHTML=rewards.map(r=>`<div class="reward"><h3>${r[0]}</h3><p>${r[2]} ⭐</p><button class="${data.themes.includes(r[1])?'secondary':'gold'}" onclick="buyTheme('${r[1]}',${r[2]})">${data.themes.includes(r[1])?(data.theme===r[1]?'✓ Active':'Use theme'):'Unlock'}</button></div>`).join('');}
