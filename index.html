@@ -162,7 +162,7 @@ async function requestNotifications(){
      const reg=await navigator.serviceWorker.ready;
      let sub=await reg.pushManager.getSubscription();
      if(!sub){
-       const r=await fetch('/api/vapid-public-key');
+       const r=await fetch('https://studyverse-notifications.onrender.com/api/vapid-public-key');
        if(r.ok){const key=await r.text();sub=await reg.pushManager.subscribe({userVisibleOnly:true,applicationServerKey:urlBase64ToUint8Array(key)});await fetch('/api/subscribe',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(sub)});}
      } else {fetch('/api/subscribe',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(sub)}).catch(()=>{});}
    }
