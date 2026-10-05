@@ -1,0 +1,129 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#6956e8">
+<link rel="manifest" href="manifest.json">
+<title>STUDYVERSE — Plan • Achieve • Reflect</title>
+<style>
+:root{--bg:#f6f4ff;--card:#fff;--ink:#27233d;--muted:#77728d;--accent:#6956e8;--accent2:#8c7cf4;--line:#e7e2f3;--school:#5b8def;--org:#f29b4b;--study:#6ac58a}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font-family:system-ui,-apple-system,Segoe UI,Arial}
+header{background:linear-gradient(135deg,#5d4be0,#9588ff);color:#fff;padding:22px 6%;position:sticky;top:0;z-index:10}
+header h1{margin:0;font-size:29px}header p{margin:4px 0 0;opacity:.9}
+nav{display:flex;gap:7px;overflow:auto;background:#fff;padding:10px 6%;border-bottom:1px solid var(--line);position:sticky;top:83px;z-index:9}
+nav button{border:0;border-radius:12px;padding:10px 13px;background:#f0edff;color:#5145ae;font-weight:800;white-space:nowrap;cursor:pointer}
+nav button.active{background:var(--accent);color:#fff}
+main{max-width:1150px;margin:auto;padding:24px 6% 60px}.view{display:none}.view.active{display:block}
+.hero,.card{background:var(--card);border:1px solid var(--line);border-radius:20px;padding:20px;margin-bottom:17px;box-shadow:0 8px 28px #4638a20c}
+.hero h2{font-size:32px;margin:0 0 8px}.muted{color:var(--muted)}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px}
+.stat{background:#f1efff;padding:17px;border-radius:16px}.stat b{display:block;font-size:27px}
+input,select,textarea{width:100%;padding:11px;border:1px solid var(--line);border-radius:11px;margin:5px 0 10px;background:#fff;color:var(--ink)}
+button.primary,button.gold{border:0;color:#fff;padding:11px 15px;border-radius:11px;font-weight:800;cursor:pointer;background:var(--accent)}
+button.secondary{border:1px solid var(--line);background:#fff;padding:10px 13px;border-radius:11px;font-weight:700;cursor:pointer}
+button.gold{background:#e2a51e}.task{display:flex;align-items:center;gap:10px;border-bottom:1px solid var(--line);padding:12px 0}.task:last-child{border:0}
+.task.done .taskname{text-decoration:line-through;color:#999}.pill{font-size:11px;border-radius:99px;padding:4px 8px;font-weight:800}
+.school{background:#e5efff;color:#3768c4}.org{background:#fff0df;color:#b76513}.study{background:#e6f8ed;color:#318052}.urgent{background:#ffe5e5;color:#b43c3c}
+.calendar{display:grid;grid-template-columns:repeat(7,1fr);gap:5px}.day{background:#fff;border:1px solid var(--line);border-radius:10px;min-height:92px;padding:7px}.day strong{display:block}.event{padding:5px;margin-top:4px;border-radius:6px;font-size:11px;cursor:pointer}.event.school{border-left:4px solid var(--school)}.event.org{border-left:4px solid var(--org)}.event.study{border-left:4px solid var(--study)}.event.done{opacity:.5;text-decoration:line-through}
+.mood{font-size:27px;cursor:pointer;padding:7px;border:2px solid transparent;border-radius:12px;background:#faf9ff}.mood.sel{border-color:var(--accent)}
+.challenge,.reward,.rec{border:1px solid var(--line);border-radius:16px;padding:16px;background:#fff}.progress{height:10px;background:#ece8f5;border-radius:99px;overflow:hidden}.progress i{display:block;height:100%;background:var(--accent);width:0}
+.reflection{background:#f7f5ff;border-radius:12px;padding:12px;margin-top:10px}
+@media(max-width:650px){header{padding:18px 5%}nav{top:78px;padding:9px 5%}main{padding:18px 5%}.calendar .day{min-height:72px;font-size:11px}.event{font-size:9px}}
+</style>
+</head>
+<body>
+<header><h1>🌌 STUDYVERSE</h1><p>Plan • Achieve • Reflect • Grow — for G12 HUMSS students balancing school & organizations</p></header>
+<nav id="nav">
+<button class="active" onclick="show('dashboard',this)">Home</button>
+<button onclick="show('profile',this)">Profile</button><button onclick="show('planner',this)">Planner</button><button onclick="show('calendar',this)">Calendar</button>
+<button onclick="show('challenges',this)">Challenges</button><button onclick="show('rewards',this)">Rewards</button><button onclick="show('ebook',this)">eBook</button>
+<button onclick="show('progress',this)">My Progress</button><button onclick="show('recommendations',this)">Recommendations</button>
+</nav>
+<main>
+<section id="dashboard" class="view active">
+<div class="hero"><h2 id="welcome">Welcome to your STUDYVERSE ✨</h2><p class="muted">Your schedule automatically connects tasks, completion, reflections, moods, points, and reminders.</p><button class="primary" onclick="show('planner',document.querySelectorAll('#nav button')[2])">+ Add a task</button> <button class="secondary" onclick="requestNotifications()">🔔 Enable device notifications</button><span id="notifStatus" class="muted" style="margin-left:8px;font-size:13px"></span></div>
+<div class="grid"><div class="stat"><b id="points">0</b>⭐ Points</div><div class="stat"><b id="todayTasks">0</b>📌 Open tasks</div><div class="stat"><b id="doneTasks">0</b>✅ Completed</div><div class="stat"><b id="streak">0</b>🔥 Completion streak</div></div>
+<div class="card"><h3>🌤️ Today's mood</h3><div id="dashMood" class="muted">Complete a task and record how you felt.</div></div>
+<div class="card"><h3>⚡ Next priority</h3><div id="nextTask" class="muted">No upcoming task yet.</div></div>
+</section>
+
+<section id="profile" class="view"><div class="card"><h2>👤 My Student Profile</h2>
+<label>Name</label><input id="pname" placeholder="Your name"><label>Age</label><input id="page" type="number" min="1"><label>Grade & Strand</label><input id="pgrade" value="Grade 12 HUMSS"><label>School Organization</label><input id="porg" placeholder="e.g. Student Council / Club / Pep Team"><label>Personal Goal</label><textarea id="pgoal" placeholder="What do you want to improve?"></textarea>
+<button class="primary" onclick="saveProfile()">Save profile</button></div></section>
+
+<section id="planner" class="view"><div class="card"><h2>📋 Smart Planner</h2><p class="muted">Add it once here → it appears automatically on your calendar → completion unlocks reflection, mood, points, and progress.</p>
+<label>Activity</label><input id="tname" placeholder="e.g. Finish Chapter 2 of research"><label>Date & time due</label><input id="tdue" type="datetime-local">
+<div class="grid"><div><label>Category</label><select id="tcat"><option value="school">🏫 School</option><option value="org">🧡 Organization</option><option value="study">📚 Study</option></select></div>
+<div><label>Priority</label><select id="tpriority"><option>Normal</option><option>Important</option><option>Urgent</option></select></div></div>
+<label>Reminder</label><select id="trem"><option value="0">At due time</option><option value="10">10 minutes before</option><option value="30">30 minutes before</option><option value="60">1 hour before</option><option value="1440">1 day before</option></select>
+<button class="primary" onclick="addTask()">Add + schedule reminder</button></div>
+<div class="card"><h3>My Tasks</h3><div id="tasks"></div></div></section>
+
+<section id="calendar" class="view"><div class="card"><h2>📅 Smart Calendar</h2><p class="muted">Blue = School • Orange = Organization • Green = Study. Tap a task to complete it and unlock its reflection.</p><div id="cal" class="calendar"></div></div></section>
+
+<section id="challenges" class="view"><div class="hero"><h2>🎮 Challenges</h2><p class="muted">Finish real tasks to earn points and build your student streak.</p></div><div id="challengeList" class="grid"></div></section>
+
+<section id="rewards" class="view"><div class="card"><h2>🎨 Rewards & Themes</h2><p>You have <b id="rewardPoints">0</b> ⭐ points.</p><div id="rewardsList" class="grid"></div></div></section>
+
+<section id="ebook" class="view"><div class="card"><h2>📖 STUDYVERSE eBook</h2>
+<h3>Chapter 1 — Understand Your Time</h3><p>Track classes, organization duties, study periods, responsibilities, travel, and rest before changing your routine.</p>
+<h3>Chapter 2 — Prioritize</h3><p>Start with urgent and important work. Break large tasks into smaller actions and schedule them before the deadline.</p>
+<h3>Chapter 3 — Study Habits</h3><p>Use focused study blocks, realistic goals, planned breaks, and distraction control.</p>
+<h3>Chapter 4 — Balance Organization & Academics</h3><p>When an organization activity is added, check your academic deadlines and protect your study blocks.</p>
+<h3>Chapter 5 — Reflect</h3><p>After each completed activity, record what you did and how you felt. Reflection helps you notice patterns in your habits.</p></div></section>
+
+<section id="progress" class="view"><div class="card"><h2>📈 My Progress</h2><div class="grid"><div class="stat"><b id="pct">0%</b>Tasks completed</div><div class="stat"><b id="progPts">0</b>Points earned</div><div class="stat"><b id="moodCount">0</b>Moods recorded</div></div><h3>Weekly progress note</h3><textarea id="progressNote" placeholder="Write what you improved, what challenged you, and what you want to do next week..."></textarea><button class="primary" onclick="saveProgress()">Save progress</button><h3>🧠 Mood history</h3><div id="moods"></div><h3>📔 Reflection diary</h3><div id="diary"></div></div></section>
+
+<section id="recommendations" class="view"><div class="hero"><h2>💡 Recommendations</h2><p class="muted">Suggestions based on your tasks, priorities, completion patterns, and reflections.</p></div><div id="recs" class="grid"></div></section>
+</main>
+<script>
+const KEY='studyverse_v2';
+let data=JSON.parse(localStorage.getItem(KEY)||'{"profile":{},"tasks":[],"points":0,"themes":["Default"],"theme":"Default","progressNote":"","moods":[]}');
+const moods=[['😊','Happy'],['😌','Calm'],['😎','Confident'],['😐','Neutral'],['😵‍💫','Overwhelmed'],['😰','Stressed'],['😴','Tired'],['😔','Sad'],['🤩','Excited'],['😤','Frustrated'],['🥳','Proud']];
+const rewards=[['Lavender','Default',0],['Ocean','Ocean',40],['Sunset','Sunset',70],['Forest','Forest',100],['Midnight','Midnight',140]];
+function save(){localStorage.setItem(KEY,JSON.stringify(data));}
+function show(id,btn){document.querySelectorAll('.view').forEach(x=>x.classList.remove('active'));document.getElementById(id).classList.add('active');document.querySelectorAll('#nav button').forEach(x=>x.classList.remove('active'));if(btn)btn.classList.add('active');render();}
+function saveProfile(){data.profile={name:pname.value,age:page.value,grade:pgrade.value,org:porg.value,goal:pgoal.value};save();render();alert('Profile saved!');}
+function addTask(){let name=tname.value,due=tdue.value;if(!name||!due)return alert('Please enter an activity and due date/time.');let task={id:Date.now(),name,due,cat:tcat.value,priority:tpriority.value,rem:Number(trem.value),done:false,reminded:false,reflection:'',mood:null};data.tasks.push(task);save();scheduleCheck();syncTasks();tname.value='';render();alert('Added! It is now on your calendar and reminder schedule.');}
+function complete(id){let t=data.tasks.find(x=>x.id===id);if(!t)return;if(!t.done){t.done=true;data.points+=(t.priority==='Urgent'?20:t.priority==='Important'?12:8);save();openReflection(t.id);}}
+function openReflection(id){let t=data.tasks.find(x=>x.id===id);let note=prompt('Reflection: What did you learn, accomplish, or notice while doing “'+t.name+'”?',t.reflection||'');if(note!==null)t.reflection=note;let choice=prompt('Mood after completing it: '+moods.map((m,i)=>i+' '+m[0]+' '+m[1]).join(' | '),'0');let mi=Number(choice);if(Number.isInteger(mi)&&moods[mi]){t.mood=moods[mi];data.moods.push({date:new Date().toISOString(),mood:moods[mi],task:t.name});}save();render();}
+function deleteTask(id){data.tasks=data.tasks.filter(x=>x.id!==id);save();syncTasks();render();}
+function renderTasks(){let box=document.getElementById('tasks');if(!data.tasks.length){box.innerHTML='<p class="muted">No activities yet.</p>';return}data.tasks.sort((a,b)=>new Date(a.due)-new Date(b.due));box.innerHTML=data.tasks.map(t=>`<div class="task ${t.done?'done':''}"><input type="checkbox" ${t.done?'checked':''} onchange="complete(${t.id})"><span style="flex:1"><span class="taskname"><b>${esc(t.name)}</b></span><br><small>${new Date(t.due).toLocaleString()} • <span class="pill ${t.cat}">${labelCat(t.cat)}</span> <span class="pill ${t.priority==='Urgent'?'urgent':''}">${t.priority}</span>${t.mood?' • '+t.mood[0]:''}</small></span><button class="secondary" onclick="deleteTask(${t.id})">×</button></div>`).join('');}
+function labelCat(c){return c==='school'?'🏫 School':c==='org'?'🧡 Organization':'📚 Study'}
+function renderCal(){let now=new Date(),y=now.getFullYear(),m=now.getMonth(),first=new Date(y,m,1).getDay(),days=new Date(y,m+1,0).getDate(),s=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'].map(x=>`<div class="day"><strong>${x}</strong></div>`).join('');for(let i=0;i<first;i++)s+='<div class="day"></div>';for(let d=1;d<=days;d++){let ev=data.tasks.filter(t=>{let x=new Date(t.due);return x.getFullYear()===y&&x.getMonth()===m&&x.getDate()===d});s+=`<div class="day"><strong>${d}</strong>${ev.map(e=>`<div class="event ${e.cat} ${e.done?'done':''}" onclick="complete(${e.id})">${e.mood?e.mood[0]+' ':''}${esc(e.name)} ${e.done?'✓':''}</div>`).join('')}</div>`}cal.innerHTML=s;}
+function renderChallenges(){let completed=data.tasks.filter(x=>x.done).length;let cs=[['⚡ Urgent Finisher','Complete an urgent calendar task','+20 ⭐',completed],['📚 Study Streak','Complete 3 study tasks','+25 ⭐',data.tasks.filter(x=>x.done&&x.cat==='study').length],['🏫 School Ready','Complete 3 school tasks','+25 ⭐',data.tasks.filter(x=>x.done&&x.cat==='school').length],['🧡 Org Balance','Complete 3 organization tasks','+25 ⭐',data.tasks.filter(x=>x.done&&x.cat==='org').length]];challengeList.innerHTML=cs.map(c=>`<div class="challenge"><h3>${c[0]}</h3><p>${c[1]}</p><b>${c[2]}</b><p class="muted">${c[3]} progress</p></div>`).join('');}
+function buyTheme(name,cost){if(data.themes.includes(name)){data.theme=name;save();applyTheme();return}if(data.points<cost)return alert('Not enough points yet.');data.points-=cost;data.themes.push(name);data.theme=name;save();applyTheme();}
+function renderRewards(){rewardPoints.textContent=data.points;rewardsList.innerHTML=rewards.map(r=>`<div class="reward"><h3>${r[0]}</h3><p>${r[2]} ⭐</p><button class="${data.themes.includes(r[1])?'secondary':'gold'}" onclick="buyTheme('${r[1]}',${r[2]})">${data.themes.includes(r[1])?(data.theme===r[1]?'✓ Active':'Use theme'):'Unlock'}</button></div>`).join('');}
+function applyTheme(){let t=data.theme;document.documentElement.style.setProperty('--accent',t==='Ocean'?'#168aad':t==='Sunset'?'#e76f51':t==='Forest'?'#3a8f5b':t==='Midnight'?'#3b3d75':'#6956e8');}
+function renderProgress(){let total=data.tasks.length,done=data.tasks.filter(x=>x.done).length;pct.textContent=(total?Math.round(done/total*100):0)+'%';progPts.textContent=data.points;moodCount.textContent=data.moods.length;progressNote.value=data.progressNote||'';moods.innerHTML=data.moods.slice(-12).reverse().map(x=>`<div class="reflection">${x.mood[0]} <b>${x.mood[1]}</b> — ${esc(x.task)}<br><small>${new Date(x.date).toLocaleString()}</small></div>`).join('')||'<p class="muted">Complete a task to start your mood history.</p>';diary.innerHTML=data.tasks.filter(x=>x.done&&x.reflection).slice().reverse().map(x=>`<div class="reflection"><b>${esc(x.name)}</b><br>${esc(x.reflection)}<br><small>${x.mood?x.mood[0]+' '+x.mood[1]:''}</small></div>`).join('')||'<p class="muted">Your completed-task reflections will appear here.</p>';}
+function saveProgress(){data.progressNote=progressNote.value;save();alert('Progress saved!');}
+function renderRecs(){let rec=[];let open=data.tasks.filter(x=>!x.done);let urgent=open.filter(x=>x.priority==='Urgent');let study=data.tasks.filter(x=>x.cat==='study'&&x.done).length;if(urgent.length)rec.push(['🚨 Priority tip','You have urgent tasks. Start with the earliest due item and break it into a 20–30 minute focus block.']);if(open.length>=5)rec.push(['🗂️ Schedule reset','You have several open tasks. Group similar activities and choose your top 3 priorities for today.']);if(study<2)rec.push(['📖 Study habit','Try scheduling two short focused study sessions instead of waiting for one long free period.']);if(!data.tasks.length)rec.push(['🌱 Start small','Add your next deadline or organization activity. The calendar will organize it automatically.']);rec.push(['💭 Reflection habit','After every completed task, record one sentence about what worked and how you felt.']);recs.innerHTML=rec.map(r=>`<div class="rec"><h3>${r[0]}</h3><p>${r[1]}</p></div>`).join('');}
+function render(){applyTheme();let p=data.profile;welcome.textContent=p.name?`Hi, ${p.name}! Ready for your next win? ✨`:'Welcome to your STUDYVERSE ✨';pname.value=p.name||'';page.value=p.age||'';pgrade.value=p.grade||'Grade 12 HUMSS';porg.value=p.org||'';pgoal.value=p.goal||'';points.textContent=data.points;todayTasks.textContent=data.tasks.filter(x=>!x.done).length;doneTasks.textContent=data.tasks.filter(x=>x.done).length;streak.textContent=Math.min(data.tasks.filter(x=>x.done).length,7);let last=data.moods.at(-1);dashMood.textContent=last?last.mood[0]+' '+last.mood[1]+' — '+last.task:'Complete a task and record how you felt.';let n=data.tasks.filter(x=>!x.done).sort((a,b)=>new Date(a.due)-new Date(b.due))[0];nextTask.innerHTML=n?`<b>${esc(n.name)}</b><br><small>${new Date(n.due).toLocaleString()} • ${labelCat(n.cat)}</small>`:'No upcoming task yet.';renderTasks();renderCal();renderChallenges();renderRewards();renderProgress();renderRecs();}
+async function requestNotifications(){
+ if(!('Notification'in window))return alert('This browser does not support notifications.');
+ try{
+   const permission=await Notification.requestPermission();
+   if(permission!=='granted'){updateNotifStatus();return alert('Notification permission was not granted.');}
+   if('serviceWorker' in navigator){
+     const reg=await navigator.serviceWorker.ready;
+     let sub=await reg.pushManager.getSubscription();
+     if(!sub){
+       const r=await fetch('/api/vapid-public-key');
+       if(r.ok){const key=await r.text();sub=await reg.pushManager.subscribe({userVisibleOnly:true,applicationServerKey:urlBase64ToUint8Array(key)});await fetch('/api/subscribe',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(sub)});}
+     } else {fetch('/api/subscribe',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(sub)}).catch(()=>{});}
+   }
+   await syncTasks();updateNotifStatus();alert('Notifications enabled! Your reminders can appear as device notifications.');
+ }catch(e){console.error(e);updateNotifStatus();alert('Notifications could not be enabled. Make sure you are using HTTPS or localhost.');}
+}
+function urlBase64ToUint8Array(base64String){const padding='='.repeat((4-base64String.length%4)%4);const base64=(base64String+padding).replace(/-/g,'+').replace(/_/g,'/');const rawData=atob(base64);return Uint8Array.from([...rawData].map(c=>c.charCodeAt(0)));}
+async function syncTasks(){try{if(Notification.permission!=='granted')return;const r=await fetch('/api/sync-tasks',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({tasks:data.tasks})});if(r.ok){const out=await r.json();if(Array.isArray(out.tasks)){out.tasks.forEach(st=>{const local=data.tasks.find(t=>t.id===st.id);if(local&&st.reminded)local.reminded=true;});save();}}}catch(e){/* static hosting can still use local reminders */}}
+function updateNotifStatus(){const el=document.getElementById('notifStatus');if(!el)return;el.textContent='Notification: '+(('Notification'in window)?Notification.permission:'unsupported');}
+
+function scheduleCheck(){if(!('Notification'in window)||Notification.permission!=='granted')return;let now=Date.now(),changed=false;data.tasks.forEach(t=>{let at=new Date(t.due).getTime()-t.rem*60000;if(!t.done&&!t.reminded&&at<=now){if('serviceWorker'in navigator){navigator.serviceWorker.ready.then(reg=>reg.showNotification('STUDYVERSE Reminder ⏰',{body:`${t.name} is due ${t.rem?'soon':'now'}.`,icon:'',badge:'',tag:'studyverse-'+t.id,data:{taskId:t.id}})).catch(()=>new Notification('STUDYVERSE Reminder ⏰',{body:`${t.name} is due ${t.rem?'soon':'now'}.`}));}else new Notification('STUDYVERSE Reminder ⏰',{body:`${t.name} is due ${t.rem?'soon':'now'}.`});t.reminded=true;changed=true;}});if(changed){save();syncTasks();}}
+
+function esc(s){return String(s).replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));}
+if('serviceWorker'in navigator)navigator.serviceWorker.register('sw.js').catch(()=>{});
+setInterval(scheduleCheck,30000);scheduleCheck();updateNotifStatus();render();
+</script>
+</body></html>

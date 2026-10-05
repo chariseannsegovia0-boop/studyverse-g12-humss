@@ -1,0 +1,9 @@
+{
+  "name": "STUDYVERSE \u2014 G12 HUMSS Planner",
+  "short_name": "STUDYVERSE",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#f6f4ff",
+  "theme_color": "#6956e8",
+  "icons": []
+}
