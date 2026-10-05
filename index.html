@@ -163,7 +163,7 @@ async function requestNotifications(){
      let sub=await reg.pushManager.getSubscription();
      if(!sub){
        const r=await fetch('https://studyverse-notifications.onrender.com/api/vapid-public-key');
-       if(r.ok){const key=await r.text();sub=await reg.pushManager.subscribe({userVisibleOnly:true,applicationServerKey:urlBase64ToUint8Array(key)});await fetch('/api/subscribe',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(sub)});}
+       await fetch('https://studyverse-notifications.onrender.com/api/subscribe',{
      } else {fetch('/api/subscribe',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(sub)}).catch(()=>{});}
    }
    await syncTasks();updateNotifStatus();alert('Notifications enabled! Your reminders can appear as device notifications.');
